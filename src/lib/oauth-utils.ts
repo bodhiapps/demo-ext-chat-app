@@ -1,4 +1,4 @@
-import { getAbsoluteUrl } from './base-path'
+import { getBaseUrl } from './base-path'
 import { STORAGE_KEYS, BODHI_AUTH_URL, AUTH_REALM, APP_CLIENT_ID } from './extension-constants'
 
 // PKCE utility functions
@@ -73,8 +73,8 @@ export async function buildAuthUrl(): Promise<string> {
   const scopeString = scopes.join(' ')
   console.log('📋 OAuth scopes:', scopeString)
 
-  // Build OAuth URL
-  const redirectUri = getAbsoluteUrl('/callback')
+  // Build OAuth URL - use root path for GitHub Pages compatibility
+  const redirectUri = getBaseUrl()
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: APP_CLIENT_ID,

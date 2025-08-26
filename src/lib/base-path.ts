@@ -6,18 +6,20 @@
 
 /**
  * Get the base path for the application
- * Returns the repository name as path (e.g., '/demo-ext-chat-app') for consistent routing
+ * Returns the repository name as path (e.g., '/demo-ext-chat-app/') for consistent routing
  */
 export function getBasePath(): string {
   // Get the repository name from package.json via import.meta.env.BASE_URL
   // In Vite, BASE_URL is set by the base config option
   const baseUrl = import.meta.env.BASE_URL
 
-  // Remove trailing slash and ensure it starts with /
-  const cleanedPath = baseUrl.replace(/\/$/, '')
+  // Ensure it starts with / and ends with /
+  if (baseUrl === '/' || baseUrl === '') {
+    return '/' // For root deployments
+  }
 
-  // If it's just '/', return empty string (for root deployments)
-  return cleanedPath === '' ? '' : cleanedPath
+  // Ensure trailing slash for consistency
+  return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
 }
 
 /**
@@ -44,9 +46,7 @@ export function navigateToRoute(route: string): void {
  */
 export function navigateToRoot(): void {
   const basePath = getBasePath()
-  // Ensure we have a trailing slash for proper directory navigation
-  const rootPath = basePath ? `${basePath}/` : '/'
-  window.location.href = rootPath
+  window.location.href = basePath
 }
 
 /**

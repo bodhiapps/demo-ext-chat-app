@@ -1,19 +1,128 @@
 import { X } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import { AuthCard } from '@/components/extension/AuthCard'
-import { CallbackHandler } from '@/components/extension/CallbackHandler'
 import { ExtensionProvider, useExtensionContext } from '@/components/extension/ExtensionProvider'
 import { ExtensionStatus } from '@/components/extension/ExtensionStatus'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
+import { LoadingState } from '@/components/ui/loading-state'
 import { Toaster } from '@/components/ui/toaster'
+import { useToast } from '@/hooks/use-toast'
+import { useAuthServer } from '@/hooks/useAuthServer'
+import { useExtensionApi } from '@/hooks/useExtensionApi'
 import { isCurrentRoute, navigateToRoute } from '@/lib/base-path'
-import { getLandingError } from '@/lib/landing-error-storage'
+import { getLandingError, storeLandingError } from '@/lib/landing-error-storage'
 import ChatPage from '@/pages/ChatPage'
 
 import './App.css'
+
+function OAuthCallbackProcessor() {
+  const { toast } = useToast()
+  const { extension } = useExtensionContext()
+  const authServer = useAuthServer()
+  const extensionApi = useExtensionApi(extension.client)
+  const [isProcessing, setIsProcessing] = useState(true)
+
+  // Atomic processing - ensure token exchange happens only once
+  const processingRef = useRef<Promise<void> | null>(null)
+  const processedRef = useRef(false)
+
+  useEffect(() => {
+    // If already processed or processing, don't start again
+    if (processedRef.current || processingRef.current) {
+      return
+    }
+
+    const processOAuthCallback = async () => {
+      try {
+        console.log('🔄 [OAuthCallbackProcessor] Starting ATOMIC OAuth callback processing...')
+
+        const urlParams = new URLSearchParams(window.location.search)
+        const code = urlParams.get('code')
+        const state = urlParams.get('state')
+        const error = urlParams.get('error')
+        const errorDescription = urlParams.get('error_description')
+
+        // Handle OAuth error
+        if (error) {
+          const errorMessage = errorDescription || error
+          const displayError =
+            errorMessage === 'access_denied' ? 'User denied access to the application' : `OAuth error: ${errorMessage}`
+          throw new Error(displayError)
+        }
+
+        // Validate required parameters
+        if (!code) {
+          throw new Error('Authorization code not found in callback URL')
+        }
+        if (!state) {
+          throw new Error('State parameter not found in callback URL')
+        }
+
+        console.log('🔄 Processing OAuth callback - ATOMIC EXECUTION...')
+
+        // ATOMIC: Exchange code for tokens - this can only happen once
+        await authServer.exchangeCodeForTokens(code, state)
+        console.log('✅ Token exchange completed successfully')
+
+        // Load user info to complete authentication
+        await extensionApi.sendApiRequest('GET', '/bodhi/v1/user')
+        console.log('✅ User info loaded successfully')
+
+        // Mark as processed before clearing URL to prevent re-processing
+        processedRef.current = true
+
+        // Clear URL parameters and redirect to clean root
+        const url = new URL(window.location.href)
+        url.search = ''
+        window.history.replaceState({}, '', url.toString())
+
+        toast({
+          title: 'Authentication Successful',
+          description: 'You are now logged in and can use the chat interface.',
+        })
+      } catch (error) {
+        console.error('❌ OAuth callback processing failed:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown authentication error'
+
+        // Mark as processed even on error to prevent retry loops
+        processedRef.current = true
+
+        // Store error for display on landing page
+        storeLandingError(errorMessage)
+
+        // Clear URL and redirect to root
+        const url = new URL(window.location.href)
+        url.search = ''
+        window.history.replaceState({}, '', url.toString())
+
+        // Force page reload to show error
+        window.location.reload()
+      } finally {
+        setIsProcessing(false)
+        processingRef.current = null
+      }
+    }
+
+    // Store the processing promise to prevent concurrent executions
+    processingRef.current = processOAuthCallback()
+  }, [authServer, extensionApi, toast])
+
+  if (isProcessing) {
+    return (
+      <div className='flex min-h-screen items-center justify-center bg-white'>
+        <div className='mx-auto w-full max-w-md text-center'>
+          <LoadingState message='Processing authentication...' />
+          <p className='mt-4 text-sm text-gray-600'>Please wait while we complete your login...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
 
 function AppContent() {
   const { extension, auth } = useExtensionContext()
@@ -85,21 +194,19 @@ function AppContent() {
 }
 
 function App() {
-  // Check if we're on the callback page
-  const isCallbackPage =
-    isCurrentRoute('/callback') ||
-    new URLSearchParams(window.location.search).has('code') ||
-    new URLSearchParams(window.location.search).has('error')
+  // Check if we have OAuth callback parameters in the URL
+  const urlParams = new URLSearchParams(window.location.search)
+  const hasOAuthParams = urlParams.has('code') || urlParams.has('error')
 
   // Check if we're on the chat page
   const isChatPage = isCurrentRoute('/chat')
 
-  // If this is a callback page, show the callback handler
-  if (isCallbackPage) {
+  // If we have OAuth callback parameters, process them
+  if (hasOAuthParams) {
     return (
       <ErrorBoundary>
         <ExtensionProvider>
-          <CallbackHandler />
+          <OAuthCallbackProcessor />
           <Toaster />
         </ExtensionProvider>
       </ErrorBoundary>
@@ -118,6 +225,7 @@ function App() {
     )
   }
 
+  // Default: show the main app content
   return (
     <ErrorBoundary>
       <ExtensionProvider>

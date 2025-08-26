@@ -1,6 +1,6 @@
 import { useCallback, useRef, useMemo } from 'react'
 
-import { getAbsoluteUrl, navigateToRoot } from '@/lib/base-path'
+import { getBaseUrl, navigateToRoot } from '@/lib/base-path'
 import { STORAGE_KEYS, BODHI_AUTH_URL, AUTH_REALM, APP_CLIENT_ID } from '@/lib/extension-constants'
 import { storeLandingError } from '@/lib/landing-error-storage'
 
@@ -43,7 +43,7 @@ export function useAuthServer(): UseAuthServerReturn {
       grant_type: 'authorization_code',
       client_id: APP_CLIENT_ID,
       code: code,
-      redirect_uri: getAbsoluteUrl('/callback'),
+      redirect_uri: getBaseUrl(),
       code_verifier: codeVerifier,
     })
 
