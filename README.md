@@ -1,41 +1,6 @@
-# {{PROJECT_NAME}}
+# demo-ext-chat-app
 
 A React + TypeScript + Vite application deployed to GitHub Pages.
-
-<!--TEMPLATE_INSTRUCTIONS_START-->
-## 🚀 Quick Start (For Template Users)
-
-### Using this Template
-
-1. **Click "Use this template"** button on GitHub to create a new repository
-2. **Clone your new repository**:
-   ```bash
-   git clone https://github.com/[your-username]/[your-repo-name].git
-   cd [your-repo-name]
-   ```
-
-3. **Run the setup script**:
-   ```bash
-   npm install
-   npm run setup
-   ```
-   This will configure the project name and update all necessary files.
-
-4. **Start developing**:
-   ```bash
-   npm run dev
-   ```
-
-### Manual Setup (Alternative)
-
-If you prefer to set up manually:
-
-1. Update the `name` field in `package.json` to match your repository name
-2. The `vite.config.ts` will automatically use this name for the GitHub Pages base path
-3. Update the title in `index.html` if desired
-4. Replace `{{PROJECT_NAME}}` and `{{REPO_NAME}}` placeholders in this README
-
-<!--TEMPLATE_INSTRUCTIONS_END-->
 
 ## 🚀 Getting Started
 
@@ -67,7 +32,7 @@ This project is configured for automatic deployment to GitHub Pages using GitHub
 3. Select "GitHub Actions" as the source
 4. The workflow will automatically deploy your app
 
-Your app will be available at: `https://[your-username].github.io/{{REPO_NAME}}/`
+Your app will be available at: `https://[your-username].github.io/demo-ext-chat-app/`
 
 ## ✨ Features
 
@@ -97,7 +62,7 @@ Your app will be available at: `https://[your-username].github.io/{{REPO_NAME}}/
 ## 📁 Project Structure
 
 ```
-{{REPO_NAME}}/
+demo-ext-chat-app/
 ├── public/
 │   ├── 404.html          # SPA routing support
 │   └── vite.svg
