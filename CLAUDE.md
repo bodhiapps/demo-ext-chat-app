@@ -51,9 +51,17 @@ This is a React 19 + TypeScript + Vite application using modern tooling:
 #### Key Authentication Components
 - `useAuth()` hook - OAuth flow management (login, logout, token refresh)
 - `useExtension()` hook - Extension detection and client communication
-- `OAuthManager` class - OAuth flow implementation with PKCE security
-- `ExtensionClient` - Typed interface for extension communication
+- `useAuthServer()` hook - Token exchange and validation with automatic refresh
+- `useExtensionApi()` hook - Authenticated API requests with automatic token handling
+- `ExtensionClient` class - Typed interface for extension communication
 - Extension constants and configuration in `src/lib/extension-constants.ts`
+
+#### Authentication Flow
+- **Resource Access Request** - First requests resource scope from extension
+- **OAuth Authorization** - Builds PKCE-secured auth URL and redirects to OAuth server
+- **Token Exchange** - Exchanges authorization code for access/refresh tokens
+- **Token Refresh** - Automatic token refresh when API requests fail with 401
+- **State Management** - Real-time auth state updates via localStorage events
 
 ### Deployment
 - Configured for **GitHub Pages** deployment

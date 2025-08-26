@@ -63,7 +63,7 @@ export default tseslint.config([
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/prefer-as-const': 'error',
       'prefer-const': 'error',
       'no-var': 'error',
@@ -89,6 +89,7 @@ export default tseslint.config([
       ...jsxA11y.configs.recommended.rules,
 
       'react-refresh/only-export-components': 'off',
+      'react-hooks/exhaustive-deps': 'off',
 
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',

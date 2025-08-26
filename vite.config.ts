@@ -19,12 +19,8 @@ export default defineConfig({
     react(),
     checker({
       typescript: true,
-      eslint: {
-        lintCommand: 'eslint "./src/**/*.{ts,tsx,js,jsx}" --max-warnings 0',
-        dev: {
-          logLevel: ['error', 'warning'],
-        },
-      },
+      // Disable ESLint in dev mode due to ESLint 9 incompatibility with vite-plugin-checker
+      // ESLint still runs during build via npm run build
       overlay: {
         initialIsOpen: false,
         position: 'tl',
