@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { StatusDisplay } from '@/components/ui/status-display'
 import { useAuthServer } from '@/hooks/useAuthServer'
 import { useExtensionApi } from '@/hooks/useExtensionApi'
+import { navigateToRoot } from '@/lib/base-path'
 
 import { useExtensionContext } from './ExtensionProvider'
 
@@ -118,7 +119,7 @@ export function CallbackHandler() {
         setTimeout(() => {
           if (mounted) {
             console.log('🔄 [CallbackHandler] Redirecting to home page...')
-            window.location.href = window.location.origin
+            navigateToRoot()
           }
         }, 2000)
       } catch (error) {
@@ -155,7 +156,7 @@ export function CallbackHandler() {
   }
 
   const handleReturnHome = () => {
-    window.location.href = window.location.origin
+    navigateToRoot()
   }
 
   // Render different states

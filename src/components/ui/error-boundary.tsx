@@ -3,6 +3,7 @@ import React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { navigateToRoot } from '@/lib/base-path'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -49,7 +50,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   handleGoHome = () => {
-    window.location.href = window.location.origin
+    navigateToRoot()
   }
 
   render() {

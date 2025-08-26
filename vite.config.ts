@@ -27,7 +27,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: process.env.NODE_ENV === 'production' ? getRepoName() : '/',
+  base: getRepoName(),
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),

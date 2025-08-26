@@ -7,6 +7,7 @@ import { useExtensionContext } from '@/components/extension/ExtensionProvider'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { useExtensionApi } from '@/hooks/useExtensionApi'
+import { navigateToRoot } from '@/lib/base-path'
 import { ExtensionAPI } from '@/lib/extensionApi'
 import type { ChatMessage as ChatMessageType } from '@/lib/extensionApi'
 
@@ -227,7 +228,7 @@ const ChatPage = () => {
             <span className='text-2xl'>🪷</span>
             <h1 className='text-lg font-semibold'>Bodhi Browser Extension Demo App</h1>
           </div>
-          <Button variant='ghost' size='sm' className='gap-2' onClick={() => (window.location.href = '/')}>
+          <Button variant='ghost' size='sm' className='gap-2' onClick={() => navigateToRoot()}>
             <ArrowLeft className='h-4 w-4' />
             Back to Landing
           </Button>

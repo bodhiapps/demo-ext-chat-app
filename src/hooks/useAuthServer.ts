@@ -1,5 +1,6 @@
 import { useCallback, useRef, useMemo } from 'react'
 
+import { getAbsoluteUrl, navigateToRoot } from '@/lib/base-path'
 import { STORAGE_KEYS, BODHI_AUTH_URL, AUTH_REALM, APP_CLIENT_ID } from '@/lib/extension-constants'
 import { storeLandingError } from '@/lib/landing-error-storage'
 
@@ -42,7 +43,7 @@ export function useAuthServer(): UseAuthServerReturn {
       grant_type: 'authorization_code',
       client_id: APP_CLIENT_ID,
       code: code,
-      redirect_uri: `${window.location.origin}/callback`,
+      redirect_uri: getAbsoluteUrl('/callback'),
       code_verifier: codeVerifier,
     })
 
@@ -211,7 +212,7 @@ export function useAuthServer(): UseAuthServerReturn {
     window.dispatchEvent(new CustomEvent('authStateChanged'))
 
     // Navigate to landing page (clear query params and force refresh)
-    window.location.href = window.location.origin
+    navigateToRoot()
   }, [])
 
   const buildAuthHeaders = useCallback((additionalHeaders?: Record<string, string>): Record<string, string> => {

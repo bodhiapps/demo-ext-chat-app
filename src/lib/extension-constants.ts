@@ -1,8 +1,10 @@
+import { getAbsoluteUrl } from './base-path'
+
 // OAuth configuration constants
 export const APP_CLIENT_ID = 'app-a05c53c5-3fc4-409d-833d-f4acc90e1611'
 export const BODHI_AUTH_URL = 'https://main-id.getbodhi.app'
 export const AUTH_REALM = 'bodhi'
-export const REDIRECT_URI = `${window.location.origin}/callback`
+export const REDIRECT_URI = getAbsoluteUrl('/callback')
 
 // Storage keys
 export const STORAGE_KEYS = {

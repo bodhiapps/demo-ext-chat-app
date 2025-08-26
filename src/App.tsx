@@ -9,29 +9,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { Toaster } from '@/components/ui/toaster'
+import { isCurrentRoute, navigateToRoute } from '@/lib/base-path'
 import { getLandingError } from '@/lib/landing-error-storage'
 import ChatPage from '@/pages/ChatPage'
 
 import './App.css'
-
-// Get base path for routing - handles both dev and production
-const getBasePath = () => {
-  if (import.meta.env.DEV) return ''
-  return `/${import.meta.env.BASE_URL.split('/').filter(Boolean).join('/')}`
-}
-
-// Helper to check if current path matches a route
-const isCurrentRoute = (route: string) => {
-  const basePath = getBasePath()
-  const fullPath = `${basePath}${route}`
-  return window.location.pathname === route || window.location.pathname === fullPath
-}
-
-// Helper to navigate to a route with correct base path
-const navigateToRoute = (route: string) => {
-  const basePath = getBasePath()
-  window.location.href = `${basePath}${route}`
-}
 
 function AppContent() {
   const { extension, auth } = useExtensionContext()
