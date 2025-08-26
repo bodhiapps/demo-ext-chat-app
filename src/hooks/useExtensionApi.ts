@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 
 import { useAuthServer } from './useAuthServer'
 
+import { storeLandingError } from '@/lib/landing-error-storage'
 import { ExtensionClient, type ApiResponse, type StreamChunk } from '@/lib/libbodhiext'
 
 export interface UseExtensionApiReturn {
@@ -26,6 +27,21 @@ export interface UseExtensionApiReturn {
  */
 export function useExtensionApi(extensionClient: ExtensionClient | null): UseExtensionApiReturn {
   const { refreshAccessToken, clearTokensAndRedirect, buildAuthHeaders } = useAuthServer()
+
+  // Helper function to generate contextual error messages based on endpoint
+  const getContextualAuthError = useCallback((endpoint: string, _method: string): string => {
+    if (endpoint.includes('/v1/models') || endpoint.includes('/models')) {
+      return 'Authentication expired while loading models. Please sign in again.'
+    }
+    if (endpoint.includes('/v1/chat/completions') || endpoint.includes('/chat/completions')) {
+      return 'Authentication expired during chat. Please sign in again.'
+    }
+    if (endpoint.includes('/bodhi/v1/auth/request-access')) {
+      return 'Authentication expired during resource access request. Please sign in again.'
+    }
+    // Default fallback
+    return 'Authentication expired. Please sign in again.'
+  }, [])
 
   const is401Error = useCallback((error: any): boolean => {
     if (error && typeof error === 'object') {
@@ -75,19 +91,23 @@ export function useExtensionApi(extensionClient: ExtensionClient | null): UseExt
             } catch (retryError) {
               if (is401Error(retryError)) {
                 console.error('❌ Still getting 401 after token refresh, tokens invalid')
+                const errorMessage = getContextualAuthError(endpoint, method)
+                storeLandingError(errorMessage)
                 clearTokensAndRedirect()
               }
               throw retryError
             }
           } else {
             console.error('❌ Token refresh failed, clearing tokens')
+            const errorMessage = getContextualAuthError(endpoint, method)
+            storeLandingError(errorMessage)
             clearTokensAndRedirect()
           }
         }
         throw error
       }
     },
-    [extensionClient, buildAuthHeaders, is401Error, refreshAccessToken, clearTokensAndRedirect]
+    [extensionClient, buildAuthHeaders, is401Error, refreshAccessToken, clearTokensAndRedirect, getContextualAuthError]
   )
 
   const sendStreamRequest = useCallback(
@@ -119,19 +139,23 @@ export function useExtensionApi(extensionClient: ExtensionClient | null): UseExt
             } catch (retryError) {
               if (is401Error(retryError)) {
                 console.error('❌ Still getting 401 after token refresh, tokens invalid')
+                const errorMessage = getContextualAuthError(endpoint, method)
+                storeLandingError(errorMessage)
                 clearTokensAndRedirect()
               }
               throw retryError
             }
           } else {
             console.error('❌ Token refresh failed, clearing tokens')
+            const errorMessage = getContextualAuthError(endpoint, method)
+            storeLandingError(errorMessage)
             clearTokensAndRedirect()
           }
         }
         throw error
       }
     },
-    [extensionClient, buildAuthHeaders, is401Error, refreshAccessToken, clearTokensAndRedirect]
+    [extensionClient, buildAuthHeaders, is401Error, refreshAccessToken, clearTokensAndRedirect, getContextualAuthError]
   )
 
   const requestResourceAccess = useCallback(async (): Promise<string> => {

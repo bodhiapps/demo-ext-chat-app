@@ -1,13 +1,50 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bodhi Browser Extension Demo App</title>
+  <script>
+    // Redirect to index.html to handle SPA routing
+    // This will let the React app handle the routing
+    (function () {
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+
+      // Extract base path from current URL (everything before the last segment)
+      var segments = path.split('/').filter(Boolean);
+      var basePath = '';
+
+      // For GitHub Pages, the base path is typically /repo-name/
+      // We need to find the root of our app
+      if (segments.length > 0) {
+        // Assume the first segment is our repo name (demo-ext-chat-app)
+        basePath = '/' + segments[0] + '/';
+
+        // Store the requested path relative to base for the app to handle
+        var relativePath = '/' + segments.slice(1).join('/');
+        if (relativePath !== '/' && relativePath !== '/index.html') {
+          sessionStorage.setItem('spa_redirect', relativePath + search + hash);
+        }
+      } else {
+        // Fallback for root level deployments
+        if (path !== '/' && path !== '/index.html') {
+          sessionStorage.setItem('spa_redirect', path + search + hash);
+        }
+        basePath = '/';
+      }
+
+      // Redirect to index.html at the correct base path
+      window.location.replace(basePath);
+    })();
+  </script>
+</head>
+
+<body>
+  <div>Redirecting...</div>
+</body>
+
 </html>

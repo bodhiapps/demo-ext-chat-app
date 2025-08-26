@@ -1,6 +1,7 @@
 import { useCallback, useRef, useMemo } from 'react'
 
 import { STORAGE_KEYS, BODHI_AUTH_URL, AUTH_REALM, APP_CLIENT_ID } from '@/lib/extension-constants'
+import { storeLandingError } from '@/lib/landing-error-storage'
 
 export interface UseAuthServerReturn {
   exchangeCodeForTokens: (code: string, state: string) => Promise<void>
@@ -131,14 +132,24 @@ export function useAuthServer(): UseAuthServerReturn {
           const errorText = await response.text()
           console.error('❌ Token refresh failed:', response.status, errorText)
 
+          // Handle all non-200 responses as authentication failures
+          let errorMessage = 'Your session has expired. Please sign in again.'
+
           if (response.status === 401 || response.status === 400) {
-            // Refresh token is invalid/expired
-            console.log('🔄 Refresh token expired')
-            localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
-            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
-            // Emit custom event to notify auth state change
-            window.dispatchEvent(new CustomEvent('authStateChanged'))
+            errorMessage = 'Your session has expired. Please sign in again.'
+          } else if (response.status >= 500) {
+            errorMessage = 'Authentication service is temporarily unavailable. Please try again later.'
+          } else if (response.status === 429) {
+            errorMessage = 'Too many authentication attempts. Please wait a moment and try again.'
+          } else {
+            errorMessage = 'Authentication failed. Please sign in again.'
           }
+
+          // Store error message for landing page display
+          storeLandingError(errorMessage)
+
+          // Clear tokens and redirect via existing function
+          clearTokensAndRedirect()
 
           return null
         }
@@ -161,6 +172,17 @@ export function useAuthServer(): UseAuthServerReturn {
         return tokenData.access_token
       } catch (error) {
         console.error('❌ Token refresh error:', error)
+
+        // Handle network errors or other failures
+        let errorMessage = 'Network error during authentication. Please check your connection and try again.'
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          errorMessage = 'Unable to connect to authentication server. Please check your internet connection.'
+        }
+
+        // Store error message and redirect
+        storeLandingError(errorMessage)
+        clearTokensAndRedirect()
+
         return null
       }
     }
